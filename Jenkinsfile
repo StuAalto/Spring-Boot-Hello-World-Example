@@ -45,35 +45,7 @@ pipeline {
                 )
             }
         }
-        stage('Sanity check') {
-          steps {
-            echo "-=- Sanity Check Test project -=-"
-            sh 'mvn clean install checkstyle:checkstyle pmd:pmd'
-          }
-          post {
-            always {
-              recordIssues enabledForFailure: true, tools: [checkStyle()]
-              recordIssues enabledForFailure: true, tool: pmdParser(pattern: '**/target/pmd.xml')
-            }
-          }
-        }	
-		stage('Quality Analysis Sonarqube') {
-            environment {
-                SCANNER_HOME = tool 'sonarqube'
-                ORGANIZATION = "EQL"
-                PROJECT_NAME = "SpringBootProject_2"
-            }
-            steps {
-                withSonarQubeEnv('sonarqube') {
-                    sh '''$SCANNER_HOME/bin/sonar-scanner \
-                    -Dsonar.java.sources=src \
-                    -Dsonar.java.binaries=target \
-                    -Dsonar.projectKey=$PROJECT_NAME \
-                    -Dsonar.language=java \
-                    -Dsonar.sourceEncoding=UTF-8'''
-                }
-            }
-      stage('Continuous delivery') {
+	 stage('Continuous delivery') {
           steps {
              script {
               sshPublisher(
@@ -125,6 +97,35 @@ pipeline {
              }
           }
     }
+        stage('Sanity check') {
+          steps {
+            echo "-=- Sanity Check Test project -=-"
+            sh 'mvn clean install checkstyle:checkstyle pmd:pmd'
+          }
+          post {
+            always {
+              recordIssues enabledForFailure: true, tools: [checkStyle()]
+              recordIssues enabledForFailure: true, tool: pmdParser(pattern: '**/target/pmd.xml')
+            }
+          }
+        }	
+		stage('Quality Analysis Sonarqube') {
+            environment {
+                SCANNER_HOME = tool 'sonarqube'
+                ORGANIZATION = "EQL"
+                PROJECT_NAME = "SpringBootProject_2"
+            }
+            steps {
+                withSonarQubeEnv('sonarqube') {
+                    sh '''$SCANNER_HOME/bin/sonar-scanner \
+                    -Dsonar.java.sources=src \
+                    -Dsonar.java.binaries=target \
+                    -Dsonar.projectKey=$PROJECT_NAME \
+                    -Dsonar.language=java \
+                    -Dsonar.sourceEncoding=UTF-8'''
+                }
+            }
+      
 }
 }
 }
