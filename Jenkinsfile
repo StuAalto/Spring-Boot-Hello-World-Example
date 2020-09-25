@@ -45,14 +45,43 @@ pipeline {
                 )
             }
         }
-	 stage('Continuous delivery') {
+        stage('Sanity check') {
+          steps {
+            echo "-=- Sanity Check Test project -=-"
+            sh 'mvn clean install checkstyle:checkstyle pmd:pmd'
+          }
+          post {
+            always {
+              recordIssues enabledForFailure: true, tools: [checkStyle()]
+              recordIssues enabledForFailure: true, tool: pmdParser(pattern: '**/target/pmd.xml')
+            }
+          }
+        }	
+		stage('Quality Analysis Sonarqube') {
+            environment {
+                SCANNER_HOME = tool 'sonarqube'
+                ORGANIZATION = "EQL"
+                PROJECT_NAME = "SpringBootProject_2"
+            }
+            steps {
+                withSonarQubeEnv('sonarqube') {
+                    sh '''$SCANNER_HOME/bin/sonar-scanner \
+                    -Dsonar.java.sources=src \
+                    -Dsonar.java.binaries=target \
+                    -Dsonar.projectKey=$PROJECT_NAME \
+                    -Dsonar.language=java \
+                    -Dsonar.sourceEncoding=UTF-8'''
+                }
+            }
+	}
+	    stage('Continuous delivery') {
           steps {
              script {
               sshPublisher(
                continueOnError: false, failOnError: true,
                publishers: [
                 sshPublisherDesc(
-                 configName: "docker-host",
+                 configName: "My_docker",
                  verbose: true,
                  transfers: [
                   sshTransfer(
@@ -96,36 +125,16 @@ pipeline {
                ])
              }
           }
-    }
-        stage('Sanity check') {
-          steps {
-            echo "-=- Sanity Check Test project -=-"
-            sh 'mvn clean install checkstyle:checkstyle pmd:pmd'
-          }
-          post {
-            always {
-              recordIssues enabledForFailure: true, tools: [checkStyle()]
-              recordIssues enabledForFailure: true, tool: pmdParser(pattern: '**/target/pmd.xml')
-            }
-          }
-        }	
-		stage('Quality Analysis Sonarqube') {
-            environment {
-                SCANNER_HOME = tool 'sonarqube'
-                ORGANIZATION = "EQL"
-                PROJECT_NAME = "SpringBootProject_2"
-            }
+        }
+
+ stage('Checkout Selenium') {
             steps {
-                withSonarQubeEnv('sonarqube') {
-                    sh '''$SCANNER_HOME/bin/sonar-scanner \
-                    -Dsonar.java.sources=src \
-                    -Dsonar.java.binaries=target \
-                    -Dsonar.projectKey=$PROJECT_NAME \
-                    -Dsonar.language=java \
-                    -Dsonar.sourceEncoding=UTF-8'''
-                }
+                echo "-=- Checkout project -=-"
+                git url: 'https://github.com/zaba221/example-springboot-automation-test-selenium.git'
             }
-      
-}
-}
-}
+        }
+        stage('Selenium Test Job') {
+            steps {
+                 build job: 'projet-selenium' 
+            }
+        }
