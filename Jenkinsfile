@@ -73,7 +73,7 @@ pipeline {
                     -Dsonar.sourceEncoding=UTF-8'''
                 }
             }
-      tage('Continuous delivery') {
+      stage('Continuous delivery') {
           steps {
              script {
               sshPublisher(
