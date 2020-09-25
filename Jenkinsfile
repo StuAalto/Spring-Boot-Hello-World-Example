@@ -138,3 +138,4 @@ pipeline {
                  build job: 'projet-selenium' 
             }
         }
+    }
