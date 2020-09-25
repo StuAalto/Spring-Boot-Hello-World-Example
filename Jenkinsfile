@@ -108,7 +108,7 @@ pipeline {
                continueOnError: false, failOnError: true,
                publishers: [
                 sshPublisherDesc(
-                 configName: "docker-host",
+                 configName: "My_docker",
                  verbose: true,
                  transfers: [
                   sshTransfer(
