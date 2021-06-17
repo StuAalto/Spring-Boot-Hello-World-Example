@@ -30,7 +30,7 @@ class DemoApplicationTests {
     @Test
     @Order(2)
     @DisplayName("Test 1")
-    void testOne() {
+    void testOne(erreur) {
         System.out.println("TEST 1");
     }
     
